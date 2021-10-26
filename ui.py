@@ -94,8 +94,8 @@ class UI:
     def BuildElements(self):
         copyright = self.BuildLabel('made by Runas, ', Font("Arial", 10), Pos(380, 300))
         copyright.bind('<Button-1>', lambda e: webbrowser.open_new('https://github.com/Runas8128/magicWithFreeAngle'))
-        copyright = self.BuildLabel('CC BY-ND License', Font("Arial", 10), Pos(480, 300))
-        copyright.bind('<Button-1>', lambda e: webbrowser.open_new('https://creativecommons.org/licenses/by-nd/4.0/deed.ko'))
+        copyright = self.BuildLabel('CC BY License', Font("Arial", 10), Pos(480, 300))
+        copyright.bind('<Button-1>', lambda e: webbrowser.open_new('https://creativecommons.org/licenses/by/4.0/deed.ko'))
 
         self.BuildLabel("마법진 승수 프로그램", Font("Arial", 20), Pos(200, 0))
         fileNameEntry = self.BuildEntry(Pos(60, 100, 400, 30))
