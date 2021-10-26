@@ -1,8 +1,8 @@
 import json
 
 import parseHelper
-from parseHelper import Callable, Union, List, Dict
-from parseHelper import PathType, EventType, SettingType, MapType
+from parseHelper import Callable, Union, List
+from parseHelper import PathType, EventType, MapType
 from parseHelper import ParseException, ExpectedParseException
 
 def dataToAngle(data: PathType) -> List[int]:
@@ -17,7 +17,7 @@ def dataToAngle(data: PathType) -> List[int]:
     except TypeError:
         raise ExpectedParseException("알 수 없는 pathData 혹은 angleData입니다.\n")
 
-def makeBPMMuls(beats: List[int], style: str) -> List[int]:
+def makeBPMMuls(beats: List[int], style: str):
     if style == 'styleDefault':
         return parseHelper.makeBPMDefault(beats)
     
@@ -33,10 +33,10 @@ def makeBPMMuls(beats: List[int], style: str) -> List[int]:
 def mulToBPM(muls: List[int], BPM: int) -> List[int]:
     pass
 
-def delSppeed(Map: MapType) -> MapType:
+def delSppeed(Map: MapType):
     return Map
 
-def addSpeed(Map: MapType, Speeds: List[EventType]) -> MapType:
+def addSpeed(Map: MapType, Speeds: List[EventType]):
     return Map
 
 def run(fileName: str, isBPM: bool, BPM: str, style: str, logger: Callable[[str], None]):

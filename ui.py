@@ -26,7 +26,7 @@ def Pos(x: int = 0, y: int = 0, width: int = 0, height: int = 0, anchor: str = '
 
     return pos
 
-def Font(family, size):
+def Font(family: str, size: int) -> tkinter.font.Font:
     return tkinter.font.Font(family=family, size=size)
 
 class UI:
@@ -61,7 +61,7 @@ class UI:
         self.BPM.set("bpmBPM")
         self.Log.set('')
     
-    def BuildLabel(self, text: str, font: tkinter.font.Font, pos: PosType, parent: tkinter.Widget=None, *, var: tkinter.StringVar=None) -> tkinter.Label:
+    def BuildLabel(self, text: str, font: tkinter.font.Font, pos: PosType, parent: tkinter.Widget=None, *, var: tkinter.StringVar=None):
         label = tkinter.Label(parent if parent else self.window, text=text, height=3, font=font, textvariable=var)
         self.Elements.append((label, pos))
         return label
@@ -71,22 +71,22 @@ class UI:
         self.Elements.append((entry, pos))
         return entry
     
-    def BuildButton(self, text: str, command: typing.Callable[[], None], pos: PosType, parent: tkinter.Widget=None) -> tkinter.Button:
+    def BuildButton(self, text: str, command: typing.Callable[[], None], pos: PosType, parent: tkinter.Widget=None):
         button = tkinter.Button(parent if parent else self.window, text=text, command=command, bg='#dfdfdf')
         self.Elements.append((button, pos))
         return button
     
-    def BuildFrame(self, text: str, pos: PosType, parent: tkinter.Widget=None) -> tkinter.LabelFrame:
+    def BuildFrame(self, text: str, pos: PosType, parent: tkinter.Widget=None):
         frame = tkinter.LabelFrame(parent if parent else self.window, text=text, relief=tkinter.GROOVE, bd=2)
         self.Elements.append((frame, pos))
         return frame
     
-    def BuildRadioButton(self, text: str, variable: tkinter.StringVar, value: int, pos: PosType, parent: tkinter.Widget=None, *, command=None) -> tkinter.Radiobutton:
+    def BuildRadioButton(self, text: str, variable: tkinter.StringVar, value: int, pos: PosType, parent: tkinter.Widget=None, *, command=None):
         radio = tkinter.Radiobutton(parent if parent else self.window, text=text, variable=variable, value=value, anchor='w', command=command)
         self.Elements.append((radio, pos))
         return radio
 
-    def BuildProgressBar(self, pos: PosType, parent: tkinter.Widget=None) -> tkinter.ttk.Progressbar:
+    def BuildProgressBar(self, pos: PosType, parent: tkinter.Widget=None):
         progress = tkinter.ttk.Progressbar(parent if parent else self.window, length=550)
         self.Elements.append((progress, pos))
         return progress
