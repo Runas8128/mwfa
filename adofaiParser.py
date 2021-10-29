@@ -1,63 +1,105 @@
+import typing
 import json
 
 import parseHelper
-from parseHelper import Callable, Union, List
 from parseHelper import PathType, EventType, MapType
 from parseHelper import ParseException, ExpectedParseException
 
-def dataToAngle(data: PathType) -> List[int]:
+def dataToAngle(data: PathType, twirls: typing.List[int]) -> typing.List[int]:
     if isinstance(data, str):
         try:
             data = [parseHelper.angleForPath[path] for path in parseHelper.fixPath(data)]
         except KeyError:
-            raise ExpectedParseException("알 수 없는 pathData입니다.\n")
+            raise ExpectedParseException("알 수 없는 pathData입니다.\n", ".adofai파일을 다시 확인")
 
     try:
-        return [(data[i] - data[i-1]) % 360 for i in range(1, len(data))]
+        isTwirl = False
+        rt = []
+        for idx in range(1, len(data)):
+            if idx in twirls:
+                isTwirl = not isTwirl
+            
+            diff = data[idx] - data[idx - 1]
+
+            if data[idx] == 999: # This tile is Midspin
+                #rt.append(999)
+                continue
+            elif data[idx - 1] == 999: # Past tile is Midspin
+                diff = data[idx] - data[idx - 2]
+            
+            rt.append((180 - diff) % 360)
+            if isTwirl:
+                rt[-1] = 360 - rt[-1]
+
+        return rt
     except TypeError:
-        raise ExpectedParseException("알 수 없는 pathData 혹은 angleData입니다.\n")
+        raise ExpectedParseException("알 수 없는 pathData 혹은 angleData입니다.\n", ".adofai파일을 다시 확인")
 
-def makeBPMMuls(beats: List[int], style: str):
-    if style == 'styleDefault':
-        return parseHelper.makeBPMDefault(beats)
+def makeBPMMuls(angles: typing.List[int], bpm: str):
+    angles.insert(0, 180)
+    bpms: typing.List[EventType] = []
+    for idx in range(1, len(angles)):
+        if angles[idx] == 999:
+            bpms.append(1)
+        else:
+            bpms.append(parseHelper.makeSpeedEvent(idx, angles[idx] / angles[idx - 1]))
     
-    elif style == 'styleInner':
-        return parseHelper.makeBPMInner(beats)
-    
-    elif style == 'styleOuter':
-        return parseHelper.makeBPMOuter(beats)
-
+    if bpm.isdigit():
+        return mulToBPM(bpms, int(bpm))
     else:
-        raise ParseException("알 수 없는 소용돌이 형식입니다.\n")
+        return [event for event in bpms if event["bpmMultiplier"] < 1-1E-6 or event["bpmMultiplier"] > 1+1E-6]
 
-def mulToBPM(muls: List[int], BPM: int) -> List[int]:
-    pass
+def mulToBPM(muls: typing.List[EventType], BPM: int):
+    nowMul = 1
+    for mul in muls:
+        mul['speedType'] = 'Bpm'
+        nowMul *= mul['bpmMultiplier']
+        mul['beatsPerMinute'] = BPM * nowMul
+    return muls
 
-def delSppeed(Map: MapType):
+def delSpeed(Map: MapType):
+    actions: typing.List[EventType] = Map['actions']
+    actions = [action for action in actions if action["eventType"] != "SetSpeed"]
+    Map["actions"] = actions
     return Map
 
-def addSpeed(Map: MapType, Speeds: List[EventType]):
+def addSpeed(Map: MapType, Speeds: typing.List[EventType]):
+    actions: typing.List[EventType] = Map['actions']
+    actions += Speeds
+    actions.sort(key=lambda action: action["floor"])
+    Map["actions"] = actions
     return Map
 
-def run(fileName: str, isBPM: bool, BPM: str, style: str, logger: Callable[[str], None]):
+def run(fileName: str, BPM: str, style: str, logger: typing.Callable[[str], None]):
     logger("Loading Map file")
-    with open(fileName, 'r') as adofaiFile:
-        Map: MapType = json.load(adofaiFile)
+    
+    with open(fileName, 'r', encoding='utf-8-sig') as adofaiFile:
+        rawString = adofaiFile.read()
+        rawString = rawString.replace(',\n}\n', '\n}\n').replace(',\n}', '\n}')
+        Map: MapType = json.loads(rawString)
     
     # pathData for Hallowen or complementable version
     logger("Loading pathData/angleData")
-    data: Union[PathType, None] = Map.get("pathData", Map.get("angleData", None))
+    
+    data: typing.Union[PathType, None] = Map.get("pathData", Map.get("angleData", None))
     if not data:
         raise ParseException("얼불춤 파일이 아닙니다. 얼불춤 파일을 선택해주세요!")
     
+    logger("Deleting Speed / Twirl")
+    
+    Map = delSpeed(Map)
+    if style == "styleInner":
+        Map = parseHelper.makeInnerTwirl(Map)
+    elif style == "styleOuter":
+        Map = parseHelper.makeOuterTwirl(Map)
+    
     logger("Caculating needed multipliers")
-    Multipliers = makeBPMMuls(dataToAngle(data), style)
-    if isBPM:
-        Multipliers = mulToBPM(Multipliers, int(BPM))
+
+    twirls: typing.List[int] = [action["floor"] for action in Map["actions"] if action["eventType"] == "Twirl"]
+    Multipliers = makeBPMMuls(dataToAngle(data, twirls), BPM) # BPM is not digit -> Multiplier
+
+    logger("Make and Dump new map")
     
-    logger("Making new map")
-    newMap = addSpeed(delSppeed(Map), Multipliers)
-    
-    logger("dump new map")
-    with open(fileName[:-7] + '_Magic.adofai', 'w') as newFile:
-        json.dump(newMap, newFile)
+    newMap = addSpeed(Map, Multipliers)
+    with open(fileName[:-7] + '_Magic.adofai', 'w', encoding='utf-8-sig') as newFile:
+        json.dump(newMap, newFile, indent=4)

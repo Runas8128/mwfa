@@ -58,7 +58,7 @@ class UI:
         self.Log = tkinter.StringVar()
 
         self.style.set("styleDefault")
-        self.BPM.set("bpmBPM")
+        self.BPM.set("bpmMultiply")
         self.Log.set('')
     
     def BuildLabel(self, text: str, font: tkinter.font.Font, pos: PosType, parent: tkinter.Widget=None, *, var: tkinter.StringVar=None):
@@ -123,7 +123,7 @@ class UI:
 
         BPMFrame = self.BuildFrame("BPM 형태", Pos(245, 150, 200, 100))
 
-        BPMEntry = self.BuildEntry(Pos(60, 18, 80, 20), BPMFrame)
+        BPMEntry = self.BuildEntry(Pos(60, 43, 80, 20), BPMFrame)
 
         def enableEntry():
             BPMEntry.configure(state="normal")
@@ -133,9 +133,11 @@ class UI:
             BPMEntry.configure(state="disabled")
             BPMEntry.update()
 
-        self.BuildRadioButton("BPM", self.BPM, "bpmBPM", Pos(0, 15), BPMFrame, command=enableEntry)
-        self.BuildRadioButton("승수", self.BPM, "bpmMultiply", Pos(0, 40), BPMFrame, command=disableEntry)
-        self.BuildLabel("BPM", Font("Arial", 10), Pos(150, 0), BPMFrame)
+        disableEntry()
+
+        self.BuildRadioButton("승수", self.BPM, "bpmMultiply", Pos(0, 15), BPMFrame, command=disableEntry)
+        self.BuildRadioButton("BPM", self.BPM, "bpmBPM", Pos(0, 40), BPMFrame, command=enableEntry)
+        self.BuildLabel("BPM", Font("Arial", 10), Pos(150, 24), BPMFrame)
 
         progress = self.BuildProgressBar(Pos(50, 280))
 
@@ -154,10 +156,11 @@ class UI:
             
             def logger(log: str):
                 self.Log.set(log)
-                progress.step(20)
+                progress.step(100 / 5)
             
             try:
-                adofaiParser.run(fileName, isBPM, bpm, self.style.get(), logger)
+                adofaiParser.run(fileName, bpm, self.style.get(), logger)
+                tkinter.messagebox.showinfo("done", "성공했습니다!")
             except adofaiParser.ParseException as Error:
                 tkinter.messagebox.showerror("error", str(Error))
             except Exception as Error:
