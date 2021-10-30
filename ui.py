@@ -42,7 +42,7 @@ class UI:
     def BuildWindow(self):
         self.window = tkinter.Tk()
 
-        self.window.title("Magicshape with Free angle v0.1.0a")
+        self.window.title("Magicshape with Free angle")
         self.window.geometry("640x360")
         self.window.resizable(False, False)
 
@@ -139,12 +139,14 @@ class UI:
         self.BuildRadioButton("BPM", self.BPM, "bpmBPM", Pos(0, 40), BPMFrame, command=enableEntry)
         self.BuildLabel("BPM", Font("Arial", 10), Pos(150, 24), BPMFrame)
 
+        self.BuildLabel('', Font('Arial', 10), Pos(50, 300), var=self.Log)
+
         progress = self.BuildProgressBar(Pos(50, 280))
 
         def Run():
             fileName = fileNameEntry.get()
             isBPM = self.BPM.get() == "bpmBPM"
-            bpm = BPMEntry.get()
+            bpm = "" if BPMEntry.cget('state') == "disabled" else BPMEntry.get()
 
             if not fileName or not os.path.isfile(fileName):
                 tkinter.messagebox.showerror("error", "파일을 선택해주세요!")
@@ -171,8 +173,6 @@ class UI:
 
         self.BuildButton("실행!", Run, Pos(470, 150, 100, 100))
         self.window.bind('<Return>', lambda event: Run())
-
-        self.BuildLabel('', Font('Arial', 10), Pos(50, 320), var=self.Log)
     
     def PlaceElements(self):
         for Element in self.Elements:

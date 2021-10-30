@@ -2,8 +2,8 @@ import typing
 import json
 
 import parseHelper
-from parseHelper import PathType, EventType, MapType
-from parseHelper import ParseException, ExpectedParseException
+from parseHelper import PathType, EventType, MapType # Type Alias
+from parseHelper import ParseException, ExpectedParseException # Exceptions
 
 def dataToAngle(data: PathType, twirls: typing.List[int]) -> typing.List[int]:
     if isinstance(data, str):
@@ -19,18 +19,22 @@ def dataToAngle(data: PathType, twirls: typing.List[int]) -> typing.List[int]:
             if idx in twirls:
                 isTwirl = not isTwirl
             
-            diff = data[idx] - data[idx - 1]
+            diff = 0
 
             if data[idx] == 999: # This tile is Midspin
-                #rt.append(999)
+                rt.append(999)
+                print('store 999 at', idx)
                 continue
             elif data[idx - 1] == 999: # Past tile is Midspin
-                diff = data[idx] - data[idx - 2]
+                diff = (data[idx - 2] - data[idx]) % 360
+            else:
+                diff = (180 - data[idx] + data[idx - 1]) % 360
+                if diff == 0: diff = 360 # U-Turn Tile
             
-            rt.append((180 - diff) % 360)
-            if isTwirl:
+            rt.append(diff)
+            if isTwirl and diff != 360:
                 rt[-1] = 360 - rt[-1]
-
+        print(rt)
         return rt
     except TypeError:
         raise ExpectedParseException("알 수 없는 pathData 혹은 angleData입니다.\n", ".adofai파일을 다시 확인")
@@ -38,11 +42,15 @@ def dataToAngle(data: PathType, twirls: typing.List[int]) -> typing.List[int]:
 def makeBPMMuls(angles: typing.List[int], bpm: str):
     angles.insert(0, 180)
     bpms: typing.List[EventType] = []
+    mul: int = 0
     for idx in range(1, len(angles)):
         if angles[idx] == 999:
-            bpms.append(1)
+            mul = 1
+        elif angles[idx - 1] == 999:
+            mul = angles[idx] / angles[idx - 2]
         else:
-            bpms.append(parseHelper.makeSpeedEvent(idx, angles[idx] / angles[idx - 1]))
+            mul = angles[idx] / angles[idx - 1]
+        bpms.append(parseHelper.makeSpeedEvent(idx, mul))
     
     if bpm.isdigit():
         return mulToBPM(bpms, int(bpm))

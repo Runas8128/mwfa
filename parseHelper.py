@@ -76,6 +76,9 @@ def makeInnerTwirl(Map: MapType) -> MapType:
     
     isTwirl = False
     for idx in range(1, len(angles)):
+        if angles[idx - 1] == 999:
+            continue
+
         diff = (angles[idx] - angles[idx - 1]) % 360
         
         if isTwirl:
@@ -103,6 +106,9 @@ def makeOuterTwirl(Map: MapType) -> MapType:
     
     isTwirl = False
     for idx in range(1, len(angles)):
+        if angles[idx - 1] == 999:
+            continue
+
         diff = (angles[idx] - angles[idx - 1]) % 360
         if isTwirl:
             diff = 360 - diff
