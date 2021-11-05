@@ -38,18 +38,11 @@ def fixPath(path: str):
         .replace('5', 'a')
 
 class ParseException(Exception):
-    def __init__(self, err: str):
-        self.err = err
-    
-    def __str__(self):
-        return self
+    pass
 
 class UnExpectedParseException(ParseException):
     def __init__(self, err: str):
-        self.err = err + '디스코드에 루나스#5980으로 해당 오류를 제보해주시기 바랍니다'
-    
-    def __str__(self):
-        return self.err
+        super().__init__(err + '디스코드에 루나스#5980으로 해당 오류를 제보해주시기 바랍니다')
 
 class ExpectedParseException(UnExpectedParseException):
     def __init__(self, err: str, suggest: str):
