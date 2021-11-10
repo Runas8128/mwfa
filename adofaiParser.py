@@ -50,7 +50,7 @@ def makeBPMMuls(angles: typing.List[int], bpm: str):
             mul = angles[idx] / angles[idx - 2]
         else:
             mul = angles[idx] / angles[idx - 1]
-        bpms.append(parseHelper.makeSpeedEvent(idx, mul))
+        bpms.append(parseHelper.SpeedEvent(idx, mul))
     
     if bpm.isdigit():
         return mulToBPM(bpms, int(bpm))
@@ -97,9 +97,9 @@ def run(fileName: str, BPM: str, style: str, logger: typing.Callable[[str], None
     
     Map = delSpeed(Map)
     if style == "styleInner":
-        Map = parseHelper.makeInnerTwirl(Map)
+        Map = parseHelper.makeTwirl(Map, True)
     elif style == "styleOuter":
-        Map = parseHelper.makeOuterTwirl(Map)
+        Map = parseHelper.makeTwirl(Map, False)
     
     logger("Caculating needed multipliers")
 
