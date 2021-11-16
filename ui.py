@@ -53,13 +53,9 @@ class UI:
         self.window.bind('<Escape>', closeWindow)
     
     def InitStrings(self):
-        self.style = tkinter.StringVar()
-        self.BPM = tkinter.StringVar()
-        self.Log = tkinter.StringVar()
-
-        self.style.set("styleDefault")
-        self.BPM.set("bpmMultiply")
-        self.Log.set('')
+        self.style = tkinter.StringVar(self.window, 'styleDefault', 'style')
+        self.BPM = tkinter.StringVar(self.window, 'bpmMultiply', 'BPM')
+        self.Log = tkinter.StringVar(self.window, '', 'Log')
     
     def BuildLabel(self, text: str, font: tkinter.font.Font, pos: PosType, parent: tkinter.Widget=None, *, var: tkinter.StringVar=None):
         label = tkinter.Label(parent if parent else self.window, text=text, height=3, font=font, textvariable=var)
